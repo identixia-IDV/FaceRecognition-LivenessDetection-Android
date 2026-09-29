@@ -1,0 +1,5 @@
+-keep class com.identixia.facerecognitionsdk.** { *; }
+-keepclassmembers class com.identixia.facerecognitionsdk.FaceRecognitionSDK {
+    native <methods>;
+    static void onVideoWorkerEvent(java.lang.String);
+}

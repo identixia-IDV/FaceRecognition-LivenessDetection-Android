@@ -1,0 +1,68 @@
+# FaceRecognition-LivenessDetection-Android (customer demo)
+# Push: app source, Gradle, README, screenshots, libfacesdk placeholders.
+# Do not push: AAR / natives (Drive), secrets, build output, kit-only scripts.
+
+
+# --- IDE / local ---
+.gradle/
+.identixia/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+local.properties
+captures/
+
+
+# --- Build outputs ---
+**/build/
+.cxx/
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+
+# --- Secrets / license ---
+keystore.properties
+*.jks
+*.keystore
+license.lic
+license.dat
+activation.dat
+*.fp1
+
+
+# --- Runtime (download facerecognitionsdk.aar into libfacesdk/) ---
+*.aar
+!gradle/wrapper/gradle-wrapper.jar
+libfacesdk/**/*.aar
+libfacesdk/**/*.so
+libfacesdk/**/*.xdb
+libfacesdk/**/jniLibs/
+!libfacesdk/**/jniLibs/.gitkeep
+!libfacesdk/**/jniLibs/**/.gitkeep
+!libfacesdk/README.md
+!libfacesdk/build.gradle
+
+
+# --- Org / kit-only (not for customer GitHub) ---
+/scripts/
+/upload-library.py
+/upload_library.py
+/lib_drive.yaml
+/deploy.py
+__pycache__/
+*.pyc
+*.pyo
+build_libraries/
+.patch_runtime_state.json
+**/.patch_runtime_state.json
+
+# Engine / model packs (Drive or prepare output — never push)
+*.fpk
+*.xdb
+*.enc
+*.onnx
+*.db

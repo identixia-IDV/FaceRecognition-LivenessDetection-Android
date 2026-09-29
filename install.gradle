@@ -1,0 +1,74 @@
+// Identixia Face Recognition + Liveness.
+// The sample app applies this file and keeps using :libfacesdk when that module
+// and facerecognitionsdk.aar are already in the repo (same dependency as before).
+// An app that does not contain :libfacesdk downloads the v1.0.0 Release.
+
+def identixiaVersion = "v1.0.0"
+def identixiaAarName = "facerecognitionsdk.aar"
+def identixiaZipName = "facerecognitionsdk-android.zip"
+def identixiaRelease = "https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/releases/download/${identixiaVersion}/${identixiaZipName}"
+
+def localModule = findProject(":libfacesdk")
+def localAar = rootProject.file("libfacesdk/${identixiaAarName}")
+
+if (localModule != null && localAar.exists()) {
+    dependencies {
+        implementation project(":libfacesdk")
+    }
+} else {
+    def cache = new File(rootProject.projectDir, ".identixia/face")
+    cache.mkdirs()
+    def aarFile = new File(cache, identixiaAarName)
+    if (!aarFile.exists() && localAar.exists()) {
+        java.nio.file.Files.copy(localAar.toPath(), aarFile.toPath())
+        def localDb = rootProject.file("libfacesdk/databases")
+        if (localDb.isDirectory()) {
+            copy {
+                from localDb
+                include "*.xdb"
+                into new File(cache, "databases")
+            }
+        }
+    }
+    if (!aarFile.exists()) {
+        def zipFile = new File(cache, identixiaZipName)
+        logger.lifecycle("Identixia: downloading ${identixiaZipName} (${identixiaVersion})")
+        try {
+            new URL(identixiaRelease).withInputStream { input ->
+                zipFile.withOutputStream { out -> out << input }
+            }
+            copy {
+                from zipTree(zipFile)
+                into cache
+            }
+        } catch (Exception e) {
+            throw new GradleException(
+                "Missing ${identixiaAarName}. Download failed: ${identixiaRelease}\n${e.message}"
+            )
+        }
+        if (!aarFile.exists()) {
+            def found = fileTree(cache).matching { include "**/${identixiaAarName}" }.files
+            if (!found.isEmpty()) {
+                aarFile = found.iterator().next()
+            }
+        }
+    }
+    if (!new File(aarFile.path).exists()) {
+        throw new GradleException("Missing ${identixiaAarName} after ${identixiaRelease}")
+    }
+    dependencies {
+        implementation files(aarFile)
+    }
+
+    def dbSrc = new File(aarFile.parentFile, "databases")
+    if (dbSrc.isDirectory() && dbSrc.listFiles()?.any { it.name.endsWith(".xdb") }) {
+        def packsOut = new File(project.buildDir, "generated/identixiaAssets")
+        def dest = new File(packsOut, "facerecognitionsdk")
+        copy {
+            from dbSrc
+            include "*.xdb"
+            into dest
+        }
+        android.sourceSets.main.assets.srcDir packsOut
+    }
+}
