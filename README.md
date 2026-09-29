@@ -138,9 +138,9 @@ Keep `minSdk 24`, `abiFilters` `arm64-v8a` and `armeabi-v7a`, and `packaging { j
 
 The code below shows how to use the license:
 
-https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/blob/d4cb9c818f0955a21c503b1161576b7ad5543e3e/app/src/main/java/com/identixia/facerecognitionsdk/ui/MainActivity.kt#L21-L22
+https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/blob/3a5bb8ee0b18ab358b8213dd0a5398209524c5b9/app/src/main/java/com/identixia/facerecognitionsdk/ui/MainActivity.kt#L21-L22
 
-https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/blob/d4cb9c818f0955a21c503b1161576b7ad5543e3e/app/src/main/java/com/identixia/facerecognitionsdk/ui/MainActivity.kt#L113-L126
+https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/blob/3a5bb8ee0b18ab358b8213dd0a5398209524c5b9/app/src/main/java/com/identixia/facerecognitionsdk/ui/MainActivity.kt#L113-L126
 
 Please [contact us](#-contact) to get a license for **your own app**.
 
