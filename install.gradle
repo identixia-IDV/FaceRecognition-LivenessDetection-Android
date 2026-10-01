@@ -1,0 +1,243 @@
+import java.net.HttpURLConnection
+
+// Identixia Face Recognition + Liveness.
+// The sample app applies this file and keeps using :libfacesdk when that module
+// and facerecognitionsdk.aar are already in the repo (same dependency as before).
+// An app that does not contain :libfacesdk downloads the Latest Release (tag latest → highest vX.Y.Z; assets not duplicated).
+
+def identixiaFinish = { File part, File dest ->
+    Exception last = null
+    for (int i = 0; i < 5; i++) {
+        try {
+            java.nio.file.Files.move(part.toPath(), dest.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            return
+        } catch (Exception e) {
+            last = e
+            sleep(1000)
+        }
+    }
+    throw last
+}
+
+def identixiaDownload = { String url, File dest ->
+    dest.parentFile.mkdirs()
+    File part = new File(dest.parentFile, dest.name + ".partial")
+    Exception last = null
+    for (int attempt = 1; attempt <= 8; attempt++) {
+        HttpURLConnection conn = null
+        try {
+            long have = part.exists() ? part.length() : 0
+            URL current = new URL(url)
+            boolean resume = have > 0
+            for (int hop = 0; hop < 6; hop++) {
+                conn = (HttpURLConnection) current.openConnection()
+                conn.setInstanceFollowRedirects(false)
+                conn.setConnectTimeout(30_000)
+                conn.setReadTimeout(600_000)
+                conn.setRequestProperty("User-Agent", "identixia-gradle")
+                conn.setRequestProperty("Accept", "application/octet-stream")
+                if (resume && hop > 0) conn.setRequestProperty("Range", "bytes=${have}-")
+                int code = conn.getResponseCode()
+                if (code >= 300 && code < 400) {
+                    String loc = conn.getHeaderField("Location")
+                    conn.disconnect()
+                    conn = null
+                    if (loc == null) throw new IOException("HTTP ${code} without Location")
+                    current = new URL(current, loc)
+                    continue
+                }
+                if (code == 200) {
+                    have = 0
+                    resume = false
+                } else if (code == 416) {
+                    if (part.length() > 1024) {
+                        identixiaFinish(part, dest)
+                        return
+                    }
+                    part.delete()
+                    throw new IOException("HTTP 416")
+                } else if (code != 206) {
+                    throw new IOException("HTTP ${code}")
+                }
+                logger.lifecycle("Identixia: ${dest.name} from ${have} bytes")
+                InputStream input = conn.getInputStream()
+                OutputStream out = new BufferedOutputStream(new FileOutputStream(part, have > 0))
+                byte[] buf = new byte[1024 * 1024]
+                int n
+                long total = 0
+                while ((n = input.read(buf)) != -1) {
+                    out.write(buf, 0, n)
+                    total += n
+                }
+                out.close()
+                input.close()
+                conn.disconnect()
+                if (part.length() < 1024) throw new IOException("download too small (${part.length()} bytes)")
+                identixiaFinish(part, dest)
+                return
+            }
+            throw new IOException("too many redirects")
+        } catch (Exception e) {
+            last = e
+            logger.warn("Identixia: download attempt ${attempt} failed: ${e.message}")
+            try { conn?.disconnect() } catch (Exception ignored) {}
+            if (attempt < 8) sleep(3000)
+        }
+    }
+    throw new GradleException("Download failed: ${url}\n${last?.message}")
+}
+
+def identixiaVersion = "latest"
+def identixiaAarName = "facerecognitionsdk.aar"
+def identixiaZipName = "facerecognitionsdk-android.zip"
+def identixiaRelease = "https://github.com/identixia-IDV/FaceRecognition-LivenessDetection-Android/releases/latest/download/${identixiaZipName}"
+
+def localModule = findProject(":libfacesdk")
+def localAar = rootProject.file("libfacesdk/${identixiaAarName}")
+
+if (localModule != null && localAar.exists()) {
+    dependencies {
+        implementation project(":libfacesdk")
+    }
+} else {
+    def cache = new File(rootProject.projectDir, ".identixia/face")
+    cache.mkdirs()
+    def aarFile = new File(cache, identixiaAarName)
+    if (!aarFile.exists() && localAar.exists()) {
+        java.nio.file.Files.copy(localAar.toPath(), aarFile.toPath())
+        def localDb = rootProject.file("libfacesdk/databases")
+        if (localDb.isDirectory()) {
+            copy {
+                from localDb
+                include "*.xdb"
+                into new File(cache, "databases")
+            }
+        }
+    }
+    if (!aarFile.exists()) {
+        def zipFile = new File(cache, identixiaZipName)
+        zipFile.delete()
+        logger.lifecycle("Identixia: downloading ${identixiaZipName} (${identixiaVersion})")
+        try {
+            identixiaDownload(identixiaRelease, zipFile)
+            copy {
+                from zipTree(zipFile)
+                into cache
+            }
+        } catch (Exception e) {
+            zipFile.delete()
+            throw new GradleException(
+                "Missing ${identixiaAarName}. Download failed: ${identixiaRelease}\n${e.message}"
+            )
+        }
+        if (!aarFile.exists()) {
+            def found = fileTree(cache).matching { include "**/${identixiaAarName}" }.files
+            if (!found.isEmpty()) {
+                aarFile = found.iterator().next()
+            }
+        }
+    }
+    if (!new File(aarFile.path).exists()) {
+        throw new GradleException("Missing ${identixiaAarName} after ${identixiaRelease}")
+    }
+    dependencies {
+        implementation files(aarFile)
+    }
+
+    def dbSrc = new File(aarFile.parentFile, "databases")
+    if (dbSrc.isDirectory() && dbSrc.listFiles()?.any { it.name.endsWith(".xdb") }) {
+        def packsOut = new File(project.buildDir, "generated/identixiaAssets")
+        def dest = new File(packsOut, "facerecognitionsdk")
+        copy {
+            from dbSrc
+            include "*.xdb"
+            into dest
+        }
+        android.sourceSets.main.assets.srcDir packsOut
+    }
+}
+
+// --- Reusable kit (FaceRecognitionClient, CameraPreview, FaceJson, …) ---
+// Same apply line as the engine. Local sample uses :libfacekit; customer apps
+// get kit sources from the release zip or from this repo's main branch.
+def identixiaKitModule = "libfacekit"
+def identixiaKitRepo = "identixia-IDV/FaceRecognition-LivenessDetection-Android"
+def localKit = findProject(":${identixiaKitModule}")
+
+if (localKit != null) {
+    dependencies {
+        implementation project(":${identixiaKitModule}")
+    }
+} else {
+    def cache = new File(rootProject.projectDir, ".identixia/face")
+    cache.mkdirs()
+    def kitJava = new File(cache, "${identixiaKitModule}/src/main/java")
+    def marker = new File(kitJava, "com/identixia/facerecognitionsdk/kit/FaceRecognitionClient.kt")
+    if (!marker.exists()) {
+        // Prefer kit folder already unpacked from the engine release zip.
+        def fromZip = null
+        cache.eachDirRecurse { d ->
+            if (fromZip == null && d.name == "java" &&
+                    d.parentFile?.name == "main" &&
+                    d.parentFile?.parentFile?.name == "src" &&
+                    d.parentFile?.parentFile?.parentFile?.name == identixiaKitModule) {
+                fromZip = d
+            }
+        }
+        if (fromZip != null && fromZip.exists()) {
+            kitJava.mkdirs()
+            copy {
+                from fromZip
+                into kitJava
+            }
+        } else {
+            def kitZip = new File(cache, "libfacekit-src.zip")
+            kitZip.delete()
+            logger.lifecycle("Identixia: downloading ${identixiaKitModule} sources")
+            identixiaDownload(
+                "https://codeload.github.com/${identixiaKitRepo}/zip/refs/heads/main",
+                kitZip
+            )
+            def extract = new File(cache, "kit-extract")
+            extract.deleteDir()
+            extract.mkdirs()
+            copy {
+                from zipTree(kitZip)
+                into extract
+            }
+            def found = null
+            extract.eachDirRecurse { d ->
+                if (found == null && d.name == "java" &&
+                        d.parentFile?.name == "main" &&
+                        d.parentFile?.parentFile?.name == "src" &&
+                        d.parentFile?.parentFile?.parentFile?.name == identixiaKitModule) {
+                    found = d
+                }
+            }
+            if (found == null) {
+                throw new GradleException(
+                    "Missing ${identixiaKitModule} sources after download from ${identixiaKitRepo}"
+                )
+            }
+            kitJava.mkdirs()
+            copy {
+                from found
+                into kitJava
+            }
+        }
+    }
+    if (!marker.exists()) {
+        throw new GradleException("Missing kit sources at ${kitJava}")
+    }
+    android.sourceSets.main.java.srcDir kitJava
+    def camerax = '1.4.2'
+    dependencies {
+        implementation "androidx.camera:camera-core:$camerax"
+        implementation "androidx.camera:camera-camera2:$camerax"
+        implementation "androidx.camera:camera-lifecycle:$camerax"
+        implementation "androidx.camera:camera-view:$camerax"
+        implementation 'androidx.preference:preference-ktx:1.2.1'
+        implementation 'androidx.appcompat:appcompat:1.7.0'
+        implementation 'androidx.core:core-ktx:1.13.1'
+    }
+}

@@ -1,0 +1,182 @@
+# FaceRecognition-LivenessDetection-Android (customer demo)
+# Push: app source, Gradle, README, screenshots, libfacesdk placeholders.
+# Do not push: AAR / natives (Drive), secrets, build output, kit-only scripts.
+
+
+# --- IDE / local ---
+.gradle/
+.identixia/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+local.properties
+captures/
+
+
+# --- Build outputs ---
+**/build/
+.cxx/
+*.apk
+*.ap_
+*.aab
+*.dex
+*.class
+
+
+# --- Secrets / license ---
+keystore.properties
+*.jks
+*.keystore
+license.lic
+license.dat
+activation.dat
+*.fp1
+
+
+# --- Runtime (download facerecognitionsdk.aar into libfacesdk/) ---
+*.aar
+!gradle/wrapper/gradle-wrapper.jar
+libfacesdk/**/*.aar
+libfacesdk/**/*.so
+libfacesdk/**/*.xdb
+libfacesdk/**/jniLibs/
+!libfacesdk/**/jniLibs/.gitkeep
+!libfacesdk/**/jniLibs/**/.gitkeep
+!libfacesdk/README.md
+!libfacesdk/build.gradle
+
+
+# --- Org / kit-only (not for customer GitHub) ---
+/scripts/
+/upload-library.py
+/upload_library.py
+/lib_drive.yaml
+/deploy.py
+__pycache__/
+*.pyc
+*.pyo
+build_libraries/
+.patch_runtime_state.json
+**/.patch_runtime_state.json
+
+# Engine / model packs (Drive or prepare output — never push)
+*.fpk
+*.xdb
+*.enc
+*.onnx
+*.db
+**/_smoke.png
+**/flutter-*-smoke.png
+
+# =============================================================================
+# Identixia runtime / build binaries — never push to customer GitHub git history.
+# GitHub Release assets (v1.0.0 zips / AAR) are uploaded separately with
+# `gh release` from local disk and are NOT affected by these rules.
+# =============================================================================
+
+# Model packs / ML artifacts
+*.fpk
+*.xdb
+*.enc
+*.onnx
+*.db
+*.dat
+
+# Native / package engines
+*.aar
+*.so
+*.dll
+*.dylib
+*.lib
+*.exp
+*.pdb
+*.exe
+!gradle/wrapper/gradle-wrapper.jar
+
+# Mobile / desktop packages produced by local builds
+*.apk
+*.ap_
+*.aab
+*.ipa
+*.dSYM
+*.dSYM.zip
+
+# Downloaded Release zips / fetch caches (Gradle / CocoaPods / hooks)
+.identixia/
+**/identixia-fetch/
+**/identixia-maven/
+**/facerecognitionsdk-android.zip
+**/facerecognitionsdk-ios.zip
+**/documentreadersdk*.zip
+**/*-android.zip
+**/*-ios.zip
+
+# Linux / Windows / Docker engine trees (placeholders stay)
+lib/cpu/**
+lib/gpu/**
+!lib/cpu/
+!lib/gpu/
+!lib/**/.gitkeep
+!lib/**/README.md
+!lib/README.md
+
+# Android engine modules (AAR + packs + extracted JNI)
+libfacesdk/**/*.aar
+libfacesdk/**/*.so
+libfacesdk/**/*.xdb
+libfacesdk/**/jniLibs/**
+libfacesdk/databases/**
+!libfacesdk/**/.gitkeep
+!libfacesdk/README.md
+!libfacesdk/build.gradle
+!libfacesdk/build.gradle.kts
+libdocsdk/**/*.aar
+libdocsdk/**/*.so
+libdocsdk/**/*.xdb
+libdocsdk/**/jniLibs/**
+!libdocsdk/**/.gitkeep
+!libdocsdk/README.md
+!libdocsdk/build.gradle
+!libdocsdk/build.gradle.kts
+**/jniLibs/**/*.so
+**/jniLibs/**/*.dylib
+
+# iOS / Cordova / Capacitor / RN framework binaries (keep stubs)
+**/Frameworks/**/*.framework/**
+**/Frameworks/**/*.xcframework/**
+!**/Frameworks/README.md
+!**/Frameworks/**/*.framework/Headers/
+!**/Frameworks/**/*.framework/Modules/
+!**/Frameworks/**/*.framework/Info.plist
+!**/Frameworks/**/*.framework/**/*.h
+!**/Frameworks/**/*.framework/**/*.modulemap
+!**/Frameworks/**/*.framework/**/*.xcprivacy
+!**/Frameworks/**/*.framework/**/PrivacyInfo.xcprivacy
+
+# Staged example assets copied from packs
+**/assets/**/*.xdb
+**/assets/**/*.aar
+**/src/main/assets/**/*.xdb
+
+# Smoke / local capture junk
+**/_smoke.png
+**/flutter-*-smoke.png
+**/captures/
+
+# License / activation material
+license.lic
+license.dat
+activation.dat
+*.fp1
+keystore.properties
+*.jks
+*.keystore
+!**/debug.keystore
+
+# Android sample extras
+.gradle/
+**/build/
+.cxx/
+**/.kotlin/
+local.properties

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- DocumentReader-aligned light workbench -->
+    <style name="Theme.FaceRecognitionSDK" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/ix_accent</item>
+        <item name="colorOnPrimary">@color/ix_on_accent</item>
+        <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/ix_accent_dim</item>
+        <item name="colorSecondary">@color/ix_muted</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+        <item name="colorSecondaryContainer">@color/ix_bg</item>
+        <item name="colorOnSecondaryContainer">@color/ix_text</item>
+        <item name="colorError">@color/ix_danger</item>
+        <item name="colorOnError">@android:color/white</item>
+        <item name="colorOutline">@color/ix_stroke</item>
+        <item name="android:colorBackground">@color/ix_bg</item>
+        <item name="colorOnBackground">@color/ix_text</item>
+        <item name="colorSurface">@color/ix_surface</item>
+        <item name="colorOnSurface">@color/ix_text</item>
+        <item name="colorSurfaceVariant">@color/ix_surface_alt</item>
+        <item name="colorOnSurfaceVariant">@color/ix_muted</item>
+        <item name="android:statusBarColor">@color/ix_bg</item>
+        <item name="android:navigationBarColor">@color/ix_bg</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
+    </style>
+
+    <style name="Theme.FaceRecognitionSDK.Camera" parent="Theme.FaceRecognitionSDK">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="FaceModeCell">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_mode_cell</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <style name="FaceModeCellLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/ix_text</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="FaceModeTile">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_card</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+    <style name="FaceModeTileLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/ix_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="roundedImageView" parent="">
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopRight">10dp</item>
+        <item name="cornerSizeTopLeft">10dp</item>
+    </style>
+</resources>
